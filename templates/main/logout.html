@@ -1,0 +1,61 @@
+{% extends 'main/auth_base.html' %}
+{% load static %}
+
+{% block title %}Logged Out - MentalMate{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <div class="row g-0">
+        <div class="col-lg-6 p-5">
+            <div class="text-center mb-4">
+                <h1 class="welcome-text">See You Soon! <span title="Take care!">👋</span></h1>
+                <p class="text-muted">You have been successfully logged out. Thank you for using MentalMate!</p>
+            </div>
+            
+            <div class="text-center mt-4">
+                <p class="text-muted mb-4">We hope your time with us was helpful. Remember, we're always here when you need us.</p>
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg auth-btn">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Log In Again
+                </a>
+            </div>
+
+            <div class="auth-divider">
+                <span>Don't have an account?</span>
+            </div>
+
+            <div class="text-center">
+                <a href="{% url 'signup' %}" class="btn btn-outline-primary auth-btn">
+                    <i class="bi bi-person-plus me-2"></i> Create Account
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center p-5" 
+             style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(147, 197, 253, 0.1) 100%);">
+            <img src="https://img.freepik.com/free-vector/bye-bye-cute-cartoon-comic-character-waving-hand-saying-goodbye-vector-doodle-illustration_253081-975.jpg" 
+                 alt="Goodbye" 
+                 class="auth-illustration">
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-form .form-control {
+    padding-left: 0;
+    margin-left: 0;
+}
+
+.auth-form .input-group-text {
+    border-right: 0;
+}
+
+.auth-form .form-control:focus {
+    border-left: 0;
+    box-shadow: none;
+}
+
+.auth-form .input-group:focus-within {
+    box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+    border-radius: 1rem;
+}
+</style>
+{% endblock %}

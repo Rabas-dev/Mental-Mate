@@ -1,0 +1,351 @@
+{% extends 'main/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Track Wellness - MentalMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="p-4 text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);">
+                    <h2 class="fw-bold mb-2" style="font-size:2rem;letter-spacing:-1px;">
+                        <i class="bi bi-heart-pulse"></i> Daily Wellness Check
+                    </h2>
+                    <p class="mb-0 opacity-75">Track your mental health journey with daily check-ins</p>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <form id="wellnessForm" class="wellness-form">
+                                {% csrf_token %}
+                                
+                                <div class="mb-4">
+                                    <label class="form-label fw-medium">How are you feeling today?</label>
+                                    <div class="d-flex justify-content-between gap-2">
+                                        {% for value, label in form.mood.field.choices %}
+                                        <div class="flex-grow-1">
+                                            <input type="radio" class="btn-check" name="mood" id="mood_{{ value }}" 
+                                                   value="{{ value }}" {% if form.mood.value == value %}checked{% endif %}>
+                                            <label class="btn btn-outline-primary w-100 position-relative mood-label" 
+                                                   for="mood_{{ value }}" style="font-size: 1.5rem;">
+                                                {{ label.0 }}
+                                                <span class="mood-tooltip">{{ label.1 }}</span>
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="id_sleep_hours" class="form-label fw-medium">
+                                        <i class="bi bi-moon-stars"></i> Hours of Sleep
+                                        <span class="sleep-quality"></span>
+                                    </label>
+                                    {{ form.sleep_hours|as_crispy_field }}
+                                    <div class="sleep-feedback mt-1"></div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="id_energy_level" class="form-label fw-medium">
+                                        <i class="bi bi-lightning-charge"></i> Energy Level
+                                    </label>
+                                    <div class="range-wrapper">
+                                        {{ form.energy_level|as_crispy_field }}
+                                        <div class="range-values">
+                                            <span>Low</span>
+                                            <span>Medium</span>
+                                            <span>High</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="id_anxiety_level" class="form-label fw-medium">
+                                        <i class="bi bi-graph-up"></i> Anxiety Level
+                                    </label>
+                                    <div class="range-wrapper">
+                                        {{ form.anxiety_level|as_crispy_field }}
+                                        <div class="range-values">
+                                            <span>Calm</span>
+                                            <span>Moderate</span>
+                                            <span>High</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="id_notes" class="form-label fw-medium">
+                                        <i class="bi bi-journal-text"></i> Notes
+                                        <small class="text-muted">(Optional)</small>
+                                    </label>
+                                    {{ form.notes|as_crispy_field }}
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                                        <i class="bi bi-arrow-left"></i> Back
+                                    </a>
+                                    <button type="submit" class="btn btn-primary rounded-pill px-5" id="submitWellness">
+                                        <i class="bi bi-check-lg"></i> Save Entry
+                                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                                <div class="card-body">
+                                    <canvas id="wellnessChart"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="card border-0 shadow-sm rounded-4 bg-primary bg-opacity-10">
+                                        <div class="card-body">
+                                            <h6 class="text-primary mb-1">Average Mood</h6>
+                                            <h3 class="mb-0 fw-bold" id="avgMood">-</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card border-0 shadow-sm rounded-4 bg-success bg-opacity-10">
+                                        <div class="card-body">
+                                            <h6 class="text-success mb-1">Sleep Quality</h6>
+                                            <h3 class="mb-0 fw-bold" id="avgSleep">-</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('wellnessChart').getContext('2d');
+    let wellnessChart;
+    
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Handle form submission
+    const form = document.getElementById('wellnessForm');
+    const submitBtn = document.getElementById('submitWellness');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.querySelector('.spinner-border').classList.remove('d-none');
+        
+        fetch('{% url "save-wellness" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.status === 'success') {
+                updateChart();
+                showToast('Success!', 'Your wellness entry has been saved.');
+            } else {
+                showToast('Error', 'Something went wrong. Please try again.');
+            }
+        })
+        .catch(error => {
+            showToast('Error', 'Something went wrong. Please try again.');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.querySelector('.spinner-border').classList.add('d-none');
+        });
+    });
+
+    // Interactive sleep hours feedback
+    const sleepInput = document.getElementById('id_sleep_hours');
+    const sleepFeedback = document.querySelector('.sleep-feedback');
+    
+    sleepInput.addEventListener('input', function() {
+        const hours = parseFloat(this.value);
+        let message = '';
+        let color = '';
+        
+        if (hours < 6) {
+            message = 'You might need more sleep for optimal mental health.';
+            color = 'text-warning';
+        } else if (hours >= 6 && hours <= 9) {
+            message = 'Great! This is within the recommended range.';
+            color = 'text-success';
+        } else if (hours > 9) {
+            message = 'This is more than usual. Are you feeling extra tired?';
+            color = 'text-info';
+        }
+        
+        sleepFeedback.innerHTML = `<small class="${color}">${message}</small>`;
+    });
+
+    // Update chart and stats
+    function updateChart() {
+        fetch('{% url "wellness-data" %}')
+            .then(response => response.json())
+            .then(data => {
+                // Calculate averages
+                const avgMood = data.moods.reduce((a, b) => a + b, 0) / data.moods.length || 0;
+                const avgSleep = data.sleep_hours.reduce((a, b) => a + b, 0) / data.sleep_hours.length || 0;
+                
+                document.getElementById('avgMood').textContent = avgMood.toFixed(1) + '/5';
+                document.getElementById('avgSleep').textContent = avgSleep.toFixed(1) + 'h';
+
+                if (wellnessChart) {
+                    wellnessChart.destroy();
+                }
+
+                wellnessChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.dates,
+                        datasets: [{
+                            label: 'Mood',
+                            data: data.moods,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'Energy',
+                            data: data.energy_levels,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'Anxiety',
+                            data: data.anxiety_levels,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: 'Your Wellness Journey'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 10
+                            }
+                        }
+                    }
+                });
+            });
+    }
+
+    // Show toast notification
+    function showToast(title, message) {
+        const toastHTML = `
+            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+                <div class="toast" role="alert">
+                    <div class="toast-header">
+                        <strong class="me-auto">${title}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">${message}</div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', toastHTML);
+        const toast = new bootstrap.Toast(document.querySelector('.toast'));
+        toast.show();
+    }
+
+    // Initialize the chart
+    updateChart();
+});
+</script>
+
+<style>
+.wellness-form .btn-check:checked + .btn-outline-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    border: none;
+}
+
+.mood-label {
+    position: relative;
+}
+
+.mood-tooltip {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.mood-label:hover .mood-tooltip {
+    opacity: 1;
+}
+
+.range-wrapper {
+    position: relative;
+}
+
+.range-values {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.1);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+}
+</style>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends 'main/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}Create{% endif %} Chatbot - MentalMate{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <!-- Blue gradient header -->
+                <div class="p-5 text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);">
+                    <h2 class="fw-bold mb-2" style="font-size:2rem;letter-spacing:-1px;">
+                        {% if form.instance.pk %}
+                            <i class="bi bi-pencil-fill"></i> Customize Your Companion
+                        {% else %}
+                            <i class="bi bi-stars"></i> Create Your AI Companion
+                        {% endif %}
+                    </h2>
+                    <p class="mb-0 opacity-75">Design your perfect mental health companion with care and thoughtfulness.</p>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-center">
+                            <img src="https://img.freepik.com/free-vector/artificial-intelligence-concept-illustration_114360-7000.jpg"
+                                 alt="AI Assistant"
+                                 class="img-fluid rounded-4"
+                                 style="max-width: 200px; animation: float 3s ease-in-out infinite;">
+                        </div>
+                        <div class="col-md-8 d-flex align-items-center">
+                            <div class="alert alert-info border-0 rounded-4 mb-0" style="background: rgba(37, 99, 235, 0.1);">
+                                <h5 class="text-primary mb-2"><i class="bi bi-info-circle"></i> Tips for Creating Your Companion</h5>
+                                <ul class="mb-0 ps-3">
+                                    <li>Choose a name that feels friendly and approachable</li>
+                                    <li>Be specific about your mental health goals</li>
+                                    <li>Add context to help your companion understand you better</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" class="custom-form">
+                        {% csrf_token %}
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                {{ form.name|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.gender|as_crispy_field }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.primary_focus|as_crispy_field }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.personality|as_crispy_field }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.specific_concerns|as_crispy_field }}
+                            </div>
+                            <div class="col-12">
+                                {{ form.additional_context|as_crispy_field }}
+                            </div>
+                            <div class="col-12">
+                                <label for="id_avatar" class="form-label">Avatar</label>
+                                {% if form.instance.avatar %}
+                                    <div class="mb-2">
+                                        <img src="{{ form.instance.avatar.url }}" alt="Current Avatar" 
+                                             class="rounded-circle shadow-sm" 
+                                             style="width: 80px; height: 80px; object-fit: cover;">
+                                    </div>
+                                {% endif %}
+                                {{ form.avatar }}
+                                <div class="form-text text-muted">Choose an avatar that resonates with you. Square images work best.</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-between align-items-center">
+                            <a href="{% url 'chatbot-list' %}" class="btn btn-outline-secondary btn-lg rounded-pill px-4">
+                                <i class="bi bi-arrow-left"></i> Back
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5">
+                                {% if form.instance.pk %}
+                                    <i class="bi bi-check-lg"></i> Update Companion
+                                {% else %}
+                                    <i class="bi bi-stars"></i> Create Companion
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .custom-form .form-control,
+    .custom-form .form-select {
+        border-radius: 0.75rem;
+        border: 2px solid #e5e7eb;
+        padding: 0.75rem 1rem;
+        transition: all 0.2s;
+    }
+    
+    .custom-form .form-control:focus,
+    .custom-form .form-select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.1);
+    }
+    
+    .custom-form label {
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    
+    .custom-form .form-text {
+        color: #6b7280;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        border: none;
+        padding: 0.75rem 1.5rem;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+    }
+    
+    .btn-outline-secondary {
+        border-width: 2px;
+    }
+    
+    .alert-info {
+        color: #1e40af;
+    }
+</style>
+{% endblock %}

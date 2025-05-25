@@ -1,0 +1,118 @@
+{% extends 'main/auth_base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Sign Up - MentalMate{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <div class="row g-0">
+        <div class="col-lg-6 p-5">
+            <div class="text-center mb-4">
+                <h1 class="welcome-text">Join MentalMate <span title="Let's get started!">🚀</span></h1>
+                <p class="text-muted">Create your account and start your mental wellness journey.</p>
+            </div>
+            
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label for="id_username" class="form-label fw-medium">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text border-2 border-end-0 bg-transparent">
+                            <i class="bi bi-person text-primary"></i>
+                        </span>
+                        <input type="text" name="username" class="form-control border-2 border-start-0 ps-0" 
+                               required id="id_username" placeholder="Choose a username">
+                    </div>
+                    {% if form.username.errors %}
+                        <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_password1" class="form-label fw-medium">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text border-2 border-end-0 bg-transparent">
+                            <i class="bi bi-lock text-primary"></i>
+                        </span>
+                        <input type="password" name="password1" class="form-control border-2 border-start-0 ps-0" 
+                               required id="id_password1" placeholder="Create a strong password">
+                    </div>
+                    {% if form.password1.errors %}
+                        <div class="text-danger small mt-1">{{ form.password1.errors }}</div>
+                    {% endif %}
+                    {% if form.password1.help_text %}
+                        <div class="text-muted small mt-1">{{ form.password1.help_text|safe }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_password2" class="form-label fw-medium">Confirm Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text border-2 border-end-0 bg-transparent">
+                            <i class="bi bi-shield-lock text-primary"></i>
+                        </span>
+                        <input type="password" name="password2" class="form-control border-2 border-start-0 ps-0" 
+                               required id="id_password2" placeholder="Confirm your password">
+                    </div>
+                    {% if form.password2.errors %}
+                        <div class="text-danger small mt-1">{{ form.password2.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg auth-btn">
+                        <i class="bi bi-person-plus me-2"></i> Create Account
+                    </button>
+                </div>
+            </form>
+
+            <div class="auth-divider">
+                <span>Already have an account?</span>
+            </div>
+
+            <div class="text-center">
+                <a href="{% url 'login' %}" class="btn btn-outline-primary auth-btn">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Log In
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center p-5" 
+             style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(147, 197, 253, 0.1) 100%);">
+            <img src="https://img.freepik.com/free-vector/medical-video-call-consultation-illustration_88138-415.jpg" 
+                 alt="Signup Illustration" 
+                 class="auth-illustration">
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-form .form-control {
+    padding-left: 0;
+    margin-left: 0;
+}
+
+.auth-form .input-group-text {
+    border-right: 0;
+}
+
+.auth-form .form-control:focus {
+    border-left: 0;
+    box-shadow: none;
+}
+
+.auth-form .input-group:focus-within {
+    box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+    border-radius: 1rem;
+}
+
+.auth-form .text-muted {
+    font-size: 0.875rem;
+}
+
+.auth-form ul {
+    padding-left: 1.2rem;
+    margin-bottom: 0;
+}
+</style>
+{% endblock %}

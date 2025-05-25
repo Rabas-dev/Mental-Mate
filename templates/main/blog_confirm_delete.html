@@ -1,0 +1,28 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Delete Blog Post - MentalMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4" style="background: #fff; border: 1.5px solid #2563eb;">
+                <div class="card-header bg-transparent border-0 pb-0 text-center">
+                    <h2 class="fw-bold mb-1" style="font-size:2rem;letter-spacing:-1px;">Delete Blog Post <span class="text-danger">🗑️</span></h2>
+                </div>
+                <div class="card-body pt-2 text-center">
+                    <p>Are you sure you want to delete the blog post <strong>"{{ object.title }}"</strong>?</p>
+                    <p class="text-danger">This action cannot be undone.</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mt-4 d-flex justify-content-center gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg rounded-pill px-4">Delete</button>
+                            <a href="{% url 'blog-list' %}" class="btn btn-outline-secondary btn-lg rounded-pill px-4">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

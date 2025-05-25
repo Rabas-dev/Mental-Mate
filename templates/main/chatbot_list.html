@@ -1,0 +1,132 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}My Chatbots - MentalMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 mb-5">
+    <!-- Hero Section with Blue Theme -->
+    <div class="row align-items-center mb-5">
+        <div class="col-12 text-center p-5" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); border-radius: 2rem;">
+            <h1 class="display-4 fw-bold text-white mb-3" style="letter-spacing: -1px;">My AI Companions</h1>
+            <p class="lead text-white-50 mb-4">Your personal team of mental health companions, ready to chat 24/7.</p>
+            <a href="{% url 'chatbot-create' %}" class="btn btn-light btn-lg rounded-pill px-4 shadow-sm">
+                <i class="bi bi-plus-circle"></i> Create New Chatbot
+            </a>
+        </div>
+    </div>
+
+    {% if chatbots %}
+    <div class="row g-4">
+        {% for chatbot in chatbots %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-lg rounded-4 position-relative overflow-hidden">
+                <!-- Card Background with Blue Gradient -->
+                <div class="position-absolute w-100 h-100" style="background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%); opacity: 0.7; z-index: 0;"></div>
+                
+                <!-- Card Content -->
+                <div class="card-body position-relative z-1">
+                    <div class="d-flex align-items-center mb-4">
+                        {% if chatbot.avatar %}
+                            <img src="{{ chatbot.avatar.url }}" alt="Avatar" class="avatar-img">
+                        {% else %}
+                            <img src="{% static 'main/avatars/default.png' %}" alt="Avatar" class="avatar-img">
+                        {% endif %}
+                        <div class="ms-3">
+                            <h5 class="card-title mb-1 fw-bold text-primary">{{ chatbot.name }}</h5>
+                            <span class="badge bg-primary-subtle text-primary">{{ chatbot.get_personality_display }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-bookmark-star text-primary me-2"></i>
+                            <span class="fw-medium">Focus Area:</span>
+                        </div>
+                        <p class="card-text text-muted mb-3">{{ chatbot.get_primary_focus_display }}</p>
+                        
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-chat-quote text-primary me-2"></i>
+                            <span class="fw-medium">Specialization:</span>
+                        </div>
+                        <p class="card-text text-muted">{{ chatbot.specific_concerns|truncatechars:100 }}</p>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <small class="text-muted">Created: {{ chatbot.created_at|date:"M d, Y" }}</small>
+                        <div class="btn-group">
+                            <a href="{% url 'chatbot-chat' chatbot.pk %}" class="btn btn-primary rounded-pill me-2">
+                                <i class="bi bi-chat-dots"></i> Chat Now
+                            </a>
+                            <button class="btn btn-light rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'chatbot-update' chatbot.pk %}">
+                                    <i class="bi bi-pencil me-2"></i> Edit
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'chatbot-delete' chatbot.pk %}">
+                                    <i class="bi bi-trash me-2"></i> Delete
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <img src="https://img.freepik.com/free-vector/chatbot-artificial-intelligence-abstract-concept-illustration_335657-3723.jpg" 
+                 alt="No Chatbots" 
+                 style="width: 300px; height: 300px; object-fit: contain; animation: float 3s ease-in-out infinite;">
+        </div>
+        <h3 class="text-primary">No Chatbots Yet</h3>
+        <p class="text-muted">Create your first chatbot to get started with personalized mental health support.</p>
+        <a href="{% url 'chatbot-create' %}" class="btn btn-primary btn-lg rounded-pill mt-3">
+            <i class="bi bi-plus-circle"></i> Create Your First Chatbot
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .avatar-img {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: 2px solid #fff;
+    }
+    
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15) !important;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        border: none;
+        padding: 0.5rem 1.25rem;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+    }
+    
+    .badge.bg-primary-subtle {
+        background-color: rgba(37, 99, 235, 0.1) !important;
+        font-weight: 500;
+    }
+</style>
+
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+{% endblock %}

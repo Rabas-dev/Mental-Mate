@@ -1,0 +1,135 @@
+/* Custom styles for MentalMate */
+
+:root {
+    --primary-blue: #2563eb;
+    --secondary-blue: #3b82f6;
+    --light-blue: #60a5fa;
+    --hover-blue: #1d4ed8;
+    --background-blue: #f0f7ff;
+}
+
+body {
+    background-color: var(--background-blue);
+    font-family: 'Inter', sans-serif;
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.btn-primary:hover {
+    background-color: var(--hover-blue);
+    border-color: var(--hover-blue);
+}
+
+.btn-outline-primary {
+    color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border-radius: 1rem;
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+/* Form Styles */
+.form-control:focus {
+    border-color: var(--light-blue);
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+}
+
+/* Badge Styles */
+.badge.bg-primary {
+    background-color: var(--primary-blue) !important;
+}
+
+/* List Group Styles */
+.list-group-item {
+    border: 1px solid rgba(37, 99, 235, 0.1);
+    margin-bottom: 0.5rem;
+    border-radius: 0.5rem !important;
+}
+
+/* Alert Styles */
+.alert {
+    border: none;
+    border-radius: 1rem;
+}
+
+.alert-primary {
+    background-color: var(--light-blue);
+    color: var(--hover-blue);
+}
+
+/* Link Styles */
+a {
+    color: var(--primary-blue);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--hover-blue);
+}
+
+/* Modern Chat UI Styles */
+.chat-container {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.chat-message {
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 1rem;
+}
+
+.chat-message.user {
+    background: var(--primary-blue);
+    color: white;
+    margin-left: 2rem;
+}
+
+.chat-message.bot {
+    background: var(--background-blue);
+    color: #1a1a1a;
+    margin-right: 2rem;
+}
+
+/* Transitions */
+.btn, .card, .nav-link {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--secondary-blue);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-blue);
+}

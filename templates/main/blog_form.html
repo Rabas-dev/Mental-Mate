@@ -1,0 +1,32 @@
+{% extends 'main/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}Create{% endif %} Blog Post - MentalMate{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card border-0 shadow-lg rounded-4" style="background: #fff; border: 1.5px solid #2563eb;">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h2 class="fw-bold mb-0" style="font-size:2rem;letter-spacing:-1px;">
+                        {% if form.instance.pk %}<i class="bi bi-pencil"></i> Edit{% else %}<i class="bi bi-plus-circle"></i> Create{% endif %} Blog Post
+                    </h2>
+                </div>
+                <div class="card-body pt-2">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="mt-4 d-flex justify-content-end gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4">
+                                {% if form.instance.pk %}Update{% else %}Create{% endif %} Post
+                            </button>
+                            <a href="{% url 'blog-list' %}" class="btn btn-outline-secondary btn-lg rounded-pill px-4">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,86 @@
+{% extends 'main/auth_base.html' %}
+{% load static %}
+
+{% block title %}Login - MentalMate{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <div class="row g-0">
+        <div class="col-lg-6 p-5">
+            <div class="text-center mb-4">
+                <h1 class="welcome-text">Welcome Back! <span title="We're here for you!">🤗</span></h1>
+                <p class="text-muted">Your AI companions are waiting to chat with you.</p>
+            </div>
+            
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label for="username" class="form-label fw-medium">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text border-2 border-end-0 bg-transparent">
+                            <i class="bi bi-person text-primary"></i>
+                        </span>
+                        <input type="text" class="form-control border-2 border-start-0 ps-0" 
+                               id="username" name="username" required 
+                               placeholder="Enter your username">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="password" class="form-label fw-medium">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text border-2 border-end-0 bg-transparent">
+                            <i class="bi bi-lock text-primary"></i>
+                        </span>
+                        <input type="password" class="form-control border-2 border-start-0 ps-0" 
+                               id="password" name="password" required 
+                               placeholder="Enter your password">
+                    </div>
+                </div>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg auth-btn">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Log In
+                    </button>
+                </div>
+            </form>
+
+            <div class="auth-divider">
+                <span>Don't have an account?</span>
+            </div>
+
+            <div class="text-center">
+                <a href="{% url 'signup' %}" class="btn btn-outline-primary auth-btn">
+                    <i class="bi bi-person-plus me-2"></i> Create Account
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center p-5" 
+             style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(147, 197, 253, 0.1) 100%);">
+            <img src="https://img.freepik.com/free-vector/mental-health-support-abstract-concept-vector-illustration-mental-health-service-professional-psychological-help-individual-counselling-stress-anxiety-relief-emotional-support-abstract-metaphor_335657-1632.jpg" 
+                 alt="Login Illustration" 
+                 class="auth-illustration">
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-form .form-control {
+    padding-left: 0;
+    margin-left: 0;
+}
+
+.auth-form .input-group-text {
+    border-right: 0;
+}
+
+.auth-form .form-control:focus {
+    border-left: 0;
+    box-shadow: none;
+}
+
+.auth-form .input-group:focus-within {
+    box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+    border-radius: 1rem;
+}
+</style>
+{% endblock %}

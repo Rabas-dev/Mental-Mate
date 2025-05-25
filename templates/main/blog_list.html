@@ -1,0 +1,189 @@
+{% extends 'main/base.html' %}
+{% block title %}Blog - MentalMate{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero/Featured Section -->
+    {% if blog_posts %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="featured-blog-card shadow-lg rounded-4 overflow-hidden position-relative mb-4">
+                <div class="row g-0 align-items-center">
+                    <div class="col-md-6">
+                        <img src="{{ blog_posts.0.cover_image_url|default:'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80' }}" alt="Featured" class="featured-img w-100 h-100 object-fit-cover">
+                    </div>
+                    <div class="col-md-6 p-4">
+                        <span class="badge bg-primary-subtle text-primary mb-2">{{ blog_posts.0.get_category_display }}</span>
+                        <h2 class="fw-bold mb-3">{{ blog_posts.0.title }}</h2>
+                        <p class="lead text-muted mb-4">{{ blog_posts.0.content|truncatechars:200 }}</p>
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Author" class="rounded-circle me-2" width="40" height="40">
+                            <div>
+                                <small class="text-muted">By {{ blog_posts.0.author.username }}</small><br>
+                                <small class="text-muted">{{ blog_posts.0.created_at|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+                        <a href="{% url 'blog-detail' blog_posts.0.pk %}" class="btn btn-primary rounded-pill px-4 mt-2">
+                            Read Featured <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Blog Grid -->
+    <div class="row g-4">
+        {% for post in blog_posts|slice:'1:' %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 blog-card position-relative overflow-hidden">
+                <img src="{{ post.cover_image_url|default:'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80' }}" class="card-img-top blog-cover" alt="Blog Cover">
+                <div class="card-body position-relative z-1 d-flex flex-column">
+                    <span class="badge bg-primary-subtle text-primary mb-2">{{ post.get_category_display }}</span>
+                    <h5 class="card-title text-primary mb-2">{{ post.title }}</h5>
+                    <p class="card-text text-muted mb-3">{{ post.content|truncatechars:120 }}</p>
+                    <div class="d-flex align-items-center mt-auto">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Author" class="rounded-circle me-2" width="32" height="32">
+                        <div>
+                            <small class="text-muted">By {{ post.author.username }}</small><br>
+                            <small class="text-muted">{{ post.created_at|date:"M d, Y" }}</small>
+                        </div>
+                    </div>
+                    <a href="{% url 'blog-detail' post.pk %}" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <img src="https://img.freepik.com/free-vector/blog-post-concept-illustration_114360-244.jpg" alt="No Blog Posts" style="width: 300px; height: 300px; object-fit: contain; animation: float 3s ease-in-out infinite;">
+            <h3 class="text-primary mb-3">No Blog Posts Yet</h3>
+            <p class="text-muted mb-4">Be the first to share your mental health insights and experiences.</p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'blog-create' %}" class="btn btn-primary btn-lg rounded-pill px-4">
+                    <i class="bi bi-plus-circle"></i> Create Your First Post
+                </a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Blog pagination" class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link rounded-pill" href="?page={{ page_obj.previous_page_number }}">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </a>
+                </li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link rounded-pill">{{ num }}</span>
+                    </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link rounded-pill" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link rounded-pill" href="?page={{ page_obj.next_page_number }}">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<style>
+body {
+    background: #f8fafd;
+}
+.featured-blog-card {
+    background: #fff;
+    border-radius: 2rem;
+    box-shadow: 0 8px 32px rgba(37, 99, 235, 0.10);
+    overflow: hidden;
+    min-height: 320px;
+}
+.featured-img {
+    min-height: 320px;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+.blog-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    background: #fff;
+    border-radius: 1.5rem;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.08);
+    overflow: hidden;
+}
+.blog-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(37, 99, 235, 0.15) !important;
+}
+.blog-cover {
+    height: 180px;
+    object-fit: cover;
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+}
+.card-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+.card-text {
+    font-size: 1rem;
+}
+.badge.bg-primary-subtle {
+    background-color: rgba(37, 99, 235, 0.1) !important;
+    font-weight: 500;
+}
+.page-link {
+    color: #2563eb;
+    border: none;
+    margin: 0 0.2rem;
+    padding: 0.5rem 1rem;
+}
+.page-item.active .page-link {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: #fff;
+}
+.btn-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    border: none;
+    padding: 0.5rem 1.25rem;
+}
+.btn-primary:hover {
+    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+}
+@media (max-width: 768px) {
+    .featured-blog-card, .blog-card {
+        border-radius: 1rem;
+    }
+    .featured-img {
+        min-height: 180px;
+    }
+    .blog-cover {
+        height: 120px;
+    }
+}
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+</style>
+{% endblock %}

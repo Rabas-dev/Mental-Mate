@@ -1,0 +1,376 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Add CSRF token -->
+{% csrf_token %}
+
+<div class="video-call-bg">
+  <div class="video-call-card">
+    <div class="avatar-container">
+      <img src="https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&w=400&h=400&fit=facearea&facepad=2" alt="Rachel" class="avatar-image" id="rachel-avatar">
+            </div>
+    <div class="rachel-info">
+      <h2>Rachel</h2>
+      <div class="subtitle">Your Mental Health Companion</div>
+                </div>
+    <div id="chat-messages" class="chat-messages">
+      <div class="message ai-message">
+        Click "Call" to start your real-time conversation.
+                </div>
+            </div>
+    <div class="call-controls">
+      <button id="start-call" class="btn btn-success call-btn">
+        <i class="bi bi-telephone-fill"></i> Call
+      </button>
+      <button id="end-call" class="btn btn-danger call-btn" style="display: none;">
+        <i class="bi bi-telephone-x-fill"></i> End Call
+      </button>
+            </div>
+    <div class="status-indicator">
+      <span id="call-status" class="badge bg-secondary">
+        <i class="bi bi-circle-fill"></i>
+        Not in Call
+      </span>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Voice and chat functionality
+    const startCallButton = document.getElementById('start-call');
+    const endCallButton = document.getElementById('end-call');
+    const chatMessages = document.getElementById('chat-messages');
+    const callStatus = document.getElementById('call-status');
+    const rachelAvatar = document.getElementById('rachel-avatar');
+    let recognition;
+    let isCalling = false;
+    let isAIResponding = false;
+
+    // Initialize speech recognition
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+    }
+
+    function addMessage(message, isUser = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+        messageDiv.style.textAlign = isUser ? 'right' : 'left';
+        messageDiv.style.marginBottom = '10px';
+        messageDiv.style.padding = '8px';
+        messageDiv.style.borderRadius = '10px';
+        messageDiv.style.backgroundColor = isUser ? '#007bff' : '#f8f9fa';
+        messageDiv.style.color = isUser ? 'white' : 'black';
+        messageDiv.style.display = 'inline-block';
+        messageDiv.style.maxWidth = '80%';
+        messageDiv.textContent = message;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function playAudio(audioData, onEnd) {
+        try {
+            const audio = new Audio(`data:audio/mpeg;base64,${audioData}`);
+            // Animate Rachel's mouth while speaking
+        const speakInterval = setInterval(() => {
+                rachelAvatar.classList.toggle('speaking');
+        }, 200);
+            audio.onended = function() {
+                clearInterval(speakInterval);
+                rachelAvatar.classList.remove('speaking');
+                if (onEnd) onEnd();
+            };
+            audio.onerror = function(e) {
+            clearInterval(speakInterval);
+                rachelAvatar.classList.remove('speaking');
+                if (onEnd) onEnd();
+            };
+            audio.play();
+        } catch (error) {
+            if (onEnd) onEnd();
+        }
+    }
+
+    function startCall() {
+        if (!recognition) return;
+        isCalling = true;
+        startCallButton.style.display = 'none';
+        endCallButton.style.display = 'inline-block';
+        callStatus.textContent = 'In Call';
+        callStatus.className = 'badge bg-success';
+        addMessage('Call started. You can speak now.', false);
+        // Play welcome message first, then start recognition
+            fetch('/get-ai-response/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+                },
+            body: 'message=Hello'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.reply) {
+                    addMessage(data.reply, false);
+                if (data.audio) {
+                    playAudio(data.audio, () => {
+                        if (isCalling) recognition.start();
+                    });
+                } else {
+                    if (isCalling) recognition.start();
+                }
+            } else {
+                if (isCalling) recognition.start();
+            }
+        })
+        .catch(error => {
+            if (isCalling) recognition.start();
+        });
+    }
+
+    function endCall() {
+        isCalling = false;
+        if (recognition) recognition.stop();
+        startCallButton.style.display = 'inline-block';
+        endCallButton.style.display = 'none';
+        callStatus.textContent = 'Not in Call';
+        callStatus.className = 'badge bg-secondary';
+        addMessage('Call ended.', false);
+    }
+
+    if (recognition) {
+        recognition.onresult = function(event) {
+            if (!isCalling || isAIResponding) return;
+            const transcript = Array.from(event.results)
+                .map(result => result[0].transcript)
+                .join('');
+            if (event.results[event.results.length-1].isFinal && transcript.trim() !== '') {
+                isAIResponding = true;
+                recognition.stop();
+                addMessage(transcript, true);
+                fetch('/get-ai-response/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: `message=${encodeURIComponent(transcript)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.reply) {
+                        addMessage(data.reply, false);
+                        if (data.audio) {
+                            playAudio(data.audio, () => {
+                                if (isCalling) {
+                                    isAIResponding = false;
+                                    recognition.start();
+                                }
+                            });
+                        } else {
+                            if (isCalling) {
+                                isAIResponding = false;
+                                recognition.start();
+                            }
+                        }
+                    } else {
+                        if (isCalling) {
+                            isAIResponding = false;
+                            recognition.start();
+                        }
+                }
+            })
+            .catch(error => {
+                    if (isCalling) {
+                        isAIResponding = false;
+                        recognition.start();
+                    }
+                });
+            }
+        };
+        recognition.onerror = function(event) {
+            // Hide all errors from user, just try to recover silently
+            if (isCalling) {
+                try {
+                    recognition.stop();
+                } catch (e) {}
+                setTimeout(() => {
+                    if (isCalling && !isAIResponding) {
+                        try { recognition.start(); } catch (e) {}
+        }
+                }, 1000);
+            }
+        };
+        recognition.onend = function() {
+            if (isCalling && !isAIResponding) {
+                try { recognition.start(); } catch (e) {}
+            }
+        };
+    }
+
+    startCallButton.addEventListener('click', function() {
+        startCall();
+    });
+    endCallButton.addEventListener('click', function() {
+        endCall();
+    });
+});
+</script>
+
+<style>
+body {
+  background: #f8f9fa;
+}
+.video-call-bg {
+  min-height: calc(100vh - 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
+}
+.video-call-card {
+  background: #fff;
+  border-radius: 32px;
+  box-shadow: 0 8px 32px rgba(60, 60, 120, 0.15);
+  padding: 40px 32px 32px 32px;
+  max-width: 400px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.avatar-container {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(60, 60, 120, 0.10);
+  margin-bottom: 18px;
+  border: 4px solid #e0e7ff;
+  background: #f3f4f6;
+}
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+.avatar-image.speaking {
+  animation: speak 0.2s infinite alternate;
+}
+@keyframes speak {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.04); }
+}
+.rachel-info {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.rachel-info h2 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+.rachel-info .subtitle {
+  color: #6b7280;
+  font-size: 1rem;
+  margin-top: 2px;
+  margin-bottom: 8px;
+}
+.chat-messages {
+  width: 100%;
+  min-height: 120px;
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.message {
+  max-width: 90%;
+  padding: 14px 18px;
+  border-radius: 18px;
+  font-size: 1rem;
+  line-height: 1.5;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(60, 60, 120, 0.04);
+}
+.user-message {
+  align-self: flex-end;
+  background: linear-gradient(90deg, #6366f1 0%, #818cf8 100%);
+  color: white;
+  border-bottom-right-radius: 6px;
+}
+.ai-message {
+  align-self: flex-start;
+  background: #f3f4f6;
+  color: #2c3e50;
+  border-bottom-left-radius: 6px;
+}
+.call-controls {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 10px;
+    width: 100%;
+}
+.call-btn {
+  font-size: 1.1rem;
+  border-radius: 24px;
+  padding: 12px 32px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(60, 60, 120, 0.06);
+  transition: background 0.2s, transform 0.2s;
+}
+.call-btn:active {
+  transform: scale(0.97);
+}
+.status-indicator {
+  text-align: center;
+  margin-top: 2px;
+}
+.status-indicator .badge {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: normal;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+}
+.status-indicator .badge.bg-success {
+  background: #22c55e !important;
+  color: #fff !important;
+}
+.status-indicator .badge.bg-secondary {
+  background: #e0e7ff !important;
+  color: #6366f1 !important;
+}
+@media (max-width: 600px) {
+  .video-call-card {
+    padding: 18px 4px 18px 4px;
+    max-width: 98vw;
+  }
+  .avatar-container {
+    width: 90px;
+    height: 90px;
+  }
+  .chat-messages {
+    min-height: 60px;
+    max-height: 120px;
+  }
+}
+</style>
+{% endblock %} 
