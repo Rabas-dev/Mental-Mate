@@ -41,10 +41,3 @@ MentalMate is a Django-based web application that provides personalized mental h
    ```sh
    python manage.py runserver
    ```
-
-## Deployment
-- For Vercel or other cloud platforms, ensure you set environment variables and use a production-ready database.
-- Static/media files should be served via a CDN or cloud storage in production.
-
-## License
-MIT 
